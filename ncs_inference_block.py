@@ -18,9 +18,9 @@ class NCS_Inference(Block):
 
     def configure(self, context):
         super().configure(context)
-        self.device = ncs.EnumerateDevices()[0]
+        self.device = ncs.Device(ncs.EnumerateDevices()[0])
         self.device.OpenDevice()
-        self.graph = device.AllocateGraph(self.model())
+        self.graph = self.device.AllocateGraph(self.model())
 
     def process_signals(self, signals):
         outgoing_signals = []
