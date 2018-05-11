@@ -42,7 +42,7 @@ class NCS_Inference(Block):
             if type(signal.batch) is np.ndarray:
                 graph.queue_inference_with_fifo_elem(
                     self.input_fifo, self.output_fifo, signal, 'user object')
-                output, user_obj = output_fifo.read_elem()
+                output, user_obj = self.output_fifo.read_elem()
                 outgoing_signals.append(Signal({'prediction': output}))
         self.notify_signals(outgoing_signals)
 
