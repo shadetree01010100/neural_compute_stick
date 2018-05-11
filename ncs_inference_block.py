@@ -39,7 +39,7 @@ class NCS_Inference(Block):
     def process_signals(self, signals):
         outgoing_signals = []
         for signal in signals:
-            if type(signal) is np.ndarray:
+            if type(signal.batch) is np.ndarray:
                 graph.queue_inference_with_fifo_elem(
                     self.input_fifo, self.output_fifo, signal, 'user object')
                 output, user_obj = output_fifo.read_elem()
