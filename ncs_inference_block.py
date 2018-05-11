@@ -25,7 +25,7 @@ class NCS_Inference(Block):
         with open(model, mode='rb') as f:
             graph_file_buffer = f.read()
         self.graph = mvncapi.Graph(name)
-        self.input_fifo, self.output_fifo = graph.allocate_with_fifos(
+        self.input_fifo, self.output_fifo = self.graph.allocate_with_fifos(
             device, 
             graph_file_buffer, 
             input_fifo_type=mvncapi.FifoType.HOST_WO, 
@@ -40,7 +40,7 @@ class NCS_Inference(Block):
         outgoing_signals = []
         for signal in signals:
             if type(signal.batch) is np.ndarray:
-                graph.queue_inference_with_fifo_elem(
+                self.graph.queue_inference_with_fifo_elem(
                     self.input_fifo, self.output_fifo, signal, 'user object')
                 output, user_obj = self.output_fifo.read_elem()
                 outgoing_signals.append(Signal({'prediction': output}))
