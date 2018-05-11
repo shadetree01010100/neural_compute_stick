@@ -50,4 +50,4 @@ class NCS_Inference(Block):
         self.graph.destroy()
         self.device.close()
         self.device.destroy()
-        input_fifo.destroy()
+        self.input_fifo.destroy()
