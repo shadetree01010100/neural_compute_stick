@@ -1,7 +1,7 @@
 from mvnc import mvncapi
 import numpy as np
 
-from nio import Block
+from nio import Block, Signal
 from nio.properties import VersionProperty, StringProperty
 
 
@@ -20,19 +20,19 @@ class NCS_Inference(Block):
 
     def configure(self, context):
         super().configure(context)
-        self.device = mvncapi.Device(mvncapi.EnumerateDevices()[0])
+        self.device = mvncapi.Device(mvncapi.enumerate_devices()[0])
         self.device.open()
         with open(self.model(), mode='rb') as f:
             graph_file_buffer = f.read()
         self.graph = mvncapi.Graph(self.name())
         self.input_fifo, self.output_fifo = self.graph.allocate_with_fifos(
-            device, 
-            graph_file_buffer, 
-            input_fifo_type=mvncapi.FifoType.HOST_WO, 
+            self.device,
+            graph_file_buffer,
+            input_fifo_type=mvncapi.FifoType.HOST_WO,
             input_fifo_data_type=mvncapi.FifoDataType.FP32,
-            input_fifo_num_elem=2, 
-            output_fifo_type=mvncapi.FifoType.HOST_RO, 
-            output_fifo_data_type=mvncapi.FifoDataType.FP32, 
+            input_fifo_num_elem=2,
+            output_fifo_type=mvncapi.FifoType.HOST_RO,
+            output_fifo_data_type=mvncapi.FifoDataType.FP32,
             output_fifo_num_elem=2
         )
 
