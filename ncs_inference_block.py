@@ -1,4 +1,4 @@
-import mvnc.mvncapi as ncs
+from mvnc import mvncapi
 import numpy as np
 
 from nio import Block
@@ -20,11 +20,11 @@ class NCS_Inference(Block):
 
     def configure(self, context):
         super().configure(context)
-        self.device = ncs.Device(ncs.EnumerateDevices()[0])
+        self.device = mvncapi.Device(mvncapi.EnumerateDevices()[0])
         self.device.open()
-        with open(model, mode='rb') as f:
+        with open(self.model(), mode='rb') as f:
             graph_file_buffer = f.read()
-        self.graph = mvncapi.Graph(name)
+        self.graph = mvncapi.Graph(self.name())
         self.input_fifo, self.output_fifo = self.graph.allocate_with_fifos(
             device, 
             graph_file_buffer, 
@@ -39,15 +39,17 @@ class NCS_Inference(Block):
     def process_signals(self, signals):
         outgoing_signals = []
         for signal in signals:
-            if type(signal.batch) is np.ndarray:
-                self.graph.queue_inference_with_fifo_elem(
-                    self.input_fifo, self.output_fifo, signal, 'user object')
-                output, user_obj = self.output_fifo.read_elem()
-                outgoing_signals.append(Signal({'prediction': output}))
+            input = signal.batch
+            input = np.array(input, dtype=np.float32)
+            self.graph.queue_inference_with_fifo_elem(
+                self.input_fifo, self.output_fifo, input, 'user object')
+            output, user_obj = self.output_fifo.read_elem()
+            outgoing_signals.append(Signal({'prediction': output}))
         self.notify_signals(outgoing_signals)
 
     def stop(self):
+        self.input_fifo.destroy()
+        self.output_fifo.destroy()
         self.graph.destroy()
         self.device.close()
         self.device.destroy()
-        self.input_fifo.destroy()
